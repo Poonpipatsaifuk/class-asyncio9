@@ -9,13 +9,10 @@ import os
 
 student_id = "6310301016"
 
-
 class MachineStatus():
     def __init__(self) -> None:
-        self.pressure = round(random.uniform(2000,3000), 2)
-        self.temperature = round(random.uniform(25.0,40.0), 2)
-        self.water_level = round(random.uniform(0, 100), 2)  
-        self.detergent_level = round(random.uniform(0, 100), 2)
+        self.fulldetect = 0
+        self.heatreach = 1
     #
     # add more machine status
     #
@@ -38,7 +35,7 @@ class WashingMachine:
     async def waiting(self):
         try:
             print(f'{time.ctime()} - Start waiting')
-            await asyncio.sleep(10)
+            await asyncio.sleep(30)
         except asyncio.CancelledError:
             print(f'{time.ctime()} - Waiting function is canceled!')
             raise
@@ -90,13 +87,13 @@ async def CoroWashingMachine(w, w_sensor, client):
         if w.MACHINE_STATUS == 'READY':
             print(f"{time.ctime()} - [{w.SERIAL}-{w.MACHINE_STATUS}]")
             await publish_message(w, client, 'hw', 'get', 'STATUS', 'READY')
+
             await publish_message(w, client, 'hw', 'get', 'DOOR', 'CLOSE')
 
             w.MACHINE_STATUS = 'FILLING'
             await publish_message(w, client, 'hw', 'get', 'STATUS', 'FILLING')
             task = w.waiting_task()
             await task
-
 
         if w.MACHINE_STATUS == 'FAULT':
             await publish_message(w, client, 'hw', 'get', 'FAULT', w.FAULT_TYPE)
